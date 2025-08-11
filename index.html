@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style1.css" />
+    <link rel="stylesheet" href="css/viewprofile.css" />
+    <title>LGU4</title>
+    <style>
+      /* Loading Modal Styles */
+      .loading-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(5px);
+        animation: fadeIn 0.3s ease-out;
+      }
+      
+      .loading-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #213555;
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        width: 350px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.5s ease-out;
+      }
+      
+      .loading-spinner {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 25px;
+      }
+      
+      .loading-spinner:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 5px solid transparent;
+        border-top-color: #fff;
+        border-bottom-color: #fff;
+        animation: spin 1s linear infinite;
+      }
+      
+      .loading-spinner:after {
+        content: '';
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        border-radius: 50%;
+        border: 5px solid transparent;
+        border-left-color: rgba(255, 255, 255, 0.8);
+        border-right-color: rgba(255, 255, 255, 0.8);
+        animation: spinReverse 1.5s linear infinite;
+      }
+      
+      .loading-text {
+        font-size: 22px;
+        font-weight: bold;
+        color: white;
+        margin-bottom: 15px;
+        text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        animation: pulse 2s infinite;
+      }
+      
+      .loading-description {
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 20px;
+      }
+      
+      .progress-container {
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 15px;
+      }
+      
+      .progress-bar {
+        height: 100%;
+        width: 0%;
+        background: white;
+        border-radius: 3px;
+        transition: width 0.1s linear;
+      }
+      
+      .loading-logo {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 15px;
+        animation: float 3s ease-in-out infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      @keyframes spinReverse {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(-360deg); }
+      }
+      
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+      
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes slideUp {
+        from { 
+          transform: translate(-50%, -40%);
+          opacity: 0;
+        }
+        to { 
+          transform: translate(-50%, -50%);
+          opacity: 1;
+        }
+      }
+      
+      .modal-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+      }
+      
+      .modal-close:hover {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Avatar Modal -->
+    <div id="avatarModal" class="modal">
+      <span class="close">&times;</span>
+      <img class="modal-content" id="modalImage" />
+    </div>
+    
+    <!-- Enhanced Loading Modal -->
+    <div id="loadingModal" class="loading-modal">
+      <div class="loading-content">
+        <span class="modal-close">&times;</span>
+        <img src="img/logo2.png" class="loading-logo" alt="Logo">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">Loading...</div>
+        <p class="loading-description" id="loadingDescription">Please wait while we redirect you...</p>
+        <div class="progress-container">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <p class="loading-description" id="countdown">3 seconds remaining</p>
+      </div>
+    </div>
+    
+    <section id="sidebar">
+      <a href="#" class="brand">
+        <img
+          src="img/logo2.png"
+          alt="Profile Photo"
+          class="profile-avatar"
+          id="profileAvatar"
+          style="cursor: pointer; transition: transform 0.2s"
+        />
+        <span class="text">Public Safety And Security</span>
+      </a>
+      <ul class="side-menu top">
+        <li>
+          <a href="index.html" class="nav-link" data-title="Dashboard">
+            <i class="bx bxs-dashboard"></i>
+            <span class="text">Dashboard</span>
+          </a>
+        </li>
+        <span class="separator">Main</span>
+        <li>
+          <a href="#" class="nav-link" data-title="Law Enforcement and Incident Reporting">
+            <i class="bx bx-shield"></i>
+            <span class="text">Law Enforcement and Incident Reporting</span>
+          </a>
+        </li>
+        <li>
+          <a href="TTM/traffic.html" class="nav-link" data-title="Traffic and Transport Management">
+            <i class="bx bx-car"></i>
+            <span class="text">Traffic and Transport Management</span>
+          </a>
+        </li>
+        <li>
+          <a href="FRSM/index.html" class="nav-link" data-title="Fire and Rescue Services Management">
+            <i class="bx bx-flame"></i>
+            <span class="text">Fire and Rescue Services Management</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-title="Emergency Response System">
+            <i class="bx bx-bell"></i>
+            <span class="text">Emergency Response System</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-title="Community Policing and Surveillance">
+            <i class="bx bx-user"></i>
+            <span class="text">Community Policing and Surveillance</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-title="Crime Data Analytics and Reporting">
+            <i class="bx bx-bar-chart-big"></i>
+            <span class="text">Crime Data Analytics and Reporting</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-title="Public Safety Campaign Management">
+            <i class="bx bx-megaphone-alt"></i>
+            <span class="text">Public Safety Campaign Management</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-title="Health and Safety Inspections">
+            <i class="bx bx-heart-plus"></i>
+            <span class="text">Health and Safety Inspections</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-title="Disaster Preparedness Training and Simulation">
+            <i class="bx bx-book-open"></i>
+            <span class="text">Disaster Preparedness Training and Simulation</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-title="Emergency Communication System">
+            <i class="bx bx-message"></i>
+            <span class="text">Emergency Communication System</span>
+          </a>
+        </li>
+      </ul>
+      <ul class="side-menu">
+        <span class="separator">SETTINGS</span>
+        <li>
+          <a href="Profile.html" class="nav-link" data-title="Profile">
+            <i class="bx bxs-user-pin"></i>
+            <span class="text">Profile</span>
+          </a>
+        </li>
+        <li>
+          <a href="Settings.html" class="nav-link" data-title="Settings">
+            <i class="bx bxs-cog"></i>
+            <span class="text">Settings</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="logout nav-link" data-title="Logout">
+            <i class="bx bxs-log-out-circle"></i>
+            <span class="text">Logout</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+    <section id="content">
+      <nav>
+        <a href="#" class="nav-link">Categories</a>
+        <form action="#">
+          <div class="form-input">
+            <input type="search" placeholder="Search..." />
+            <button type="submit" class="search-btn">
+              <i class="bx bx-search"></i>
+            </button>
+          </div>
+        </form>
+        <a href="#" class="notification">
+          <i class="bx bxs-bell"></i>
+          <span class="num">9+</span>
+        </a>
+        <div class="profile-dropdown">
+          <a href="#" class="profile" id="profile-btn">
+            <img src="img/rei.jpg" />
+          </a>
+          <div class="dropdown-menu" id="dropdown-menu">
+            <a href="Profile.html" class="nav-link" data-title="Profile">Profile</a>
+            <a href="Settings.html" class="nav-link" data-title="Settings">Settings</a>
+          </div>
+        </div>
+      </nav>
+      <main>
+        <div class="head-title">
+          <div class="left">
+            <h1>Dashboard</h1>
+            <ul class="breadcrumb">
+              <li>
+                <a href="#">Dashboard</a>
+              </li>
+              <li><i class="bx bx-chevron-right"></i></li>
+              <li>
+                <a class="active" href="#">Home</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="dashboard-overview">
+          <h2>Public Safety & Security Dashboard Overview</h2>
+
+          <div class="stats-container">
+            <div class="stat-card">
+              <h3>Incidents Reported (Last 24h)</h3>
+              <p>42</p>
+            </div>
+            <div class="stat-card">
+              <h3>Active Emergency Responses</h3>
+              <p>5</p>
+            </div>
+            <div class="stat-card">
+              <h3>Traffic Congestion Alerts</h3>
+              <p>3</p>
+            </div>
+            <div class="stat-card">
+              <h3>Fire Incidents (This Month)</h3>
+              <p>8</p>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <div class="chart">
+              <h3>Daily Incident Trend (Last 7 Days)</h3>
+              <canvas id="trendChart"></canvas>
+            </div>
+            <div class="chart">
+              <h3>Crime Category Distribution (Current Month)</h3>
+              <canvas id="crimeChart"></canvas>
+            </div>
+          </div>
+
+          <div class="response-time">
+            <h3>Average Emergency Response Time (Minutes)</h3>
+            <p>12</p>
+            <div style="width: 80%; margin: 0 auto">
+              <canvas id="responseChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </main>
+    </section>
+    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+      // Profile dropdown functionality
+      document.getElementById("profile-btn").addEventListener("click", function (event) {
+        event.preventDefault();
+        document.getElementById("dropdown-menu").classList.toggle("show");
+      });
+      document.addEventListener("click", function (event) {
+        if (!document.getElementById("profile-btn").contains(event.target)) {
+          document.getElementById("dropdown-menu").classList.remove("show");
+        }
+      });
+
+      // Avatar modal functionality
+      var modal = document.getElementById("avatarModal");
+      var img = document.getElementById("profileAvatar");
+      var modalImg = document.getElementById("modalImage");
+      img.onclick = function () {
+        modal.style.display = "block";
+        modalImg.src = this.src;
+      };
+      var span = document.getElementsByClassName("close")[0];
+      span.onclick = function () {
+        modal.style.display = "none";
+      };
+      modal.onclick = function (event) {
+        if (event.target === modal) {
+          modal.style.display = "none";
+        }
+      };
+
+      // Avatar click animation
+      document.getElementById("profileAvatar").addEventListener("click", function () {
+        this.style.transform = "scale(0.95)";
+        setTimeout(() => {
+          this.style.transform = "scale(1)";
+        }, 200);
+      });
+
+      // Enhanced loading modal functionality for ALL navigation links
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+          // Always prevent default to show animation
+          e.preventDefault();
+          
+          const loadingModal = document.getElementById('loadingModal');
+          const loadingText = document.getElementById('loadingText');
+          const loadingDescription = document.getElementById('loadingDescription');
+          const progressBar = document.getElementById('progressBar');
+          const countdown = document.getElementById('countdown');
+          const pageTitle = this.getAttribute('data-title');
+          const targetHref = this.getAttribute('href');
+          
+          // Set loading messages
+          loadingText.textContent = `Loading ${pageTitle}`;
+          loadingDescription.textContent = `Preparing ${pageTitle} interface...`;
+          countdown.textContent = '3 seconds remaining';
+          
+          // Show modal
+          loadingModal.style.display = 'block';
+          progressBar.style.width = '0%';
+          
+          // Start progress bar animation
+          let progress = 0;
+          let seconds = 3;
+          const interval = setInterval(() => {
+            progress += 1;
+            progressBar.style.width = `${progress}%`;
+            
+            // Update countdown every second
+            if (progress % 33 === 0) {
+              seconds -= 1;
+              countdown.textContent = `${seconds} second${seconds !== 1 ? 's' : ''} remaining`;
+            }
+            
+            if (progress >= 100) {
+              clearInterval(interval);
+              loadingModal.style.display = 'none';
+              
+              // Only redirect if it's not a # link
+              if (targetHref && targetHref !== '#') {
+                window.location.href = targetHref;
+              }
+            }
+          }, 30); // 3000ms total / 100 = 30ms per increment
+        });
+      });
+      
+      // Close loading modal
+      document.querySelector('.modal-close').addEventListener('click', function() {
+        document.getElementById('loadingModal').style.display = 'none';
+      });
+
+      // Charts initialization
+      const trendCtx = document.getElementById("trendChart").getContext("2d");
+      const trendChart = new Chart(trendCtx, {
+        type: "line",
+        data: {
+          labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+          datasets: [
+            {
+              label: "Incidents",
+              data: [35, 42, 28, 45, 38, 52, 47],
+              borderColor: "rgb(75, 192, 192)",
+              tension: 0.1,
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 60,
+              ticks: {
+                stepSize: 15,
+              },
+            },
+          },
+        },
+      });
+
+      const crimeCtx = document.getElementById("crimeChart").getContext("2d");
+      const crimeChart = new Chart(crimeCtx, {
+        type: "pie",
+        data: {
+          labels: [
+            "Theft",
+            "Assault",
+            "Vandalism",
+            "Traffic Violations",
+            "Other",
+          ],
+          datasets: [
+            {
+              data: [25, 15, 10, 30, 20],
+              backgroundColor: [
+                "rgba(255, 99, 132, 0.7)",
+                "rgba(54, 162, 235, 0.7)",
+                "rgba(255, 206, 86, 0.7)",
+                "rgba(75, 192, 192, 0.7)",
+                "rgba(153, 102, 255, 0.7)",
+              ],
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "right",
+            },
+          },
+        },
+      });
+
+      const responseCtx = document.getElementById("responseChart").getContext("2d");
+      const responseChart = new Chart(responseCtx, {
+        type: "bar",
+        data: {
+          labels: ["Current"],
+          datasets: [
+            {
+              label: "Minutes",
+              data: [12],
+              backgroundColor: "rgba(54, 162, 235, 0.7)",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 15,
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
